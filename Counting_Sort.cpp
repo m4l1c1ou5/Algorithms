@@ -1,0 +1,77 @@
+#include<iostream>
+using namespace std;
+struct node{
+    int key;
+    node *next;
+};
+node* newnode(int k){
+    node *n=new node;
+    n->key=k;
+    n->next=NULL;
+    return n;
+}
+node* insert(node *head,int k){
+    while(head->next!=NULL){
+        head=head->next;
+    }
+    head->next=newnode(k);
+    return head->next;
+}
+node* insert_first(int k){
+    return newnode(k);
+}
+node* counting_sort(node *head,int k){
+    node *arr[k];
+    node *temp=new node;
+    node *temp1=new node;
+    for(int i=0;i<k;i++)
+        arr[i]=NULL;
+    while(head!=NULL){
+        temp=head;
+        temp1=head->next;
+        temp->next=arr[head->key];
+        //cout<<head->next;
+        arr[head->key]=temp;
+        
+        head=temp1;
+        
+    }
+    int flag=1;
+    for(int i=0;i<k;i++){
+        if(arr[i]!=NULL){
+            if(flag==0){
+                temp=insert(temp,arr[i]->key);
+                while(arr[i]->next!=NULL){
+                    temp=insert(temp,arr[i]->next->key);
+                    arr[i]=arr[i]->next;
+                }
+            }
+            if(flag==1){
+                head=insert_first(arr[i]->key);
+                temp=head;
+                while(arr[i]->next!=NULL){
+                    temp=insert(temp,arr[i]->next->key);
+                    arr[i]=arr[i]->next;
+                }
+                flag=0;
+            }
+        }
+    }
+    return head;
+}
+int main(){
+    int k=100,n=10;
+    int a[]={23,43,13,65,34,23,98,98,23,23};
+    node *temp=new node;
+    node *head=NULL;
+    head=insert_first(a[0]);
+    for(int i=1;i<10;i++){
+        insert(head,a[i]);
+    }
+    temp=head;
+    head=counting_sort(head,k);
+    while(head!=NULL){
+        cout<<head->key<<" ";
+        head=head->next;
+    }
+}

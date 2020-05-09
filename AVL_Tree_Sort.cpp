@@ -1,0 +1,188 @@
+#include<iostream>
+using namespace std;
+
+struct node{
+    int key,ht;
+    node *left,*right;
+};
+int height(node *temp){
+    if(temp==NULL)
+        return -1;
+    return temp->ht;
+}
+int max(int a,int b){
+    return (a>b?a:b);
+}
+int weight(node *temp){
+    return height(temp->right)-height(temp->left);
+}
+node* newnode(int key){
+    node *a=new node;
+    a->key=key;
+    a->ht=0;
+    a->left=NULL;
+    a->right=NULL;
+    return a;
+}
+node* llr(node* head){
+    node *y=head->left;
+    head->left=y->right;
+    y->right=head;
+    head->ht=1+max(height(head->left),height(head->right));
+    y->ht=1+max(height(y->left),height(y->right));
+    return y;
+}
+node* rrr(node* head){
+    node *y=head->right;
+    head->right=y->left;
+    y->left=head;
+    head->ht=1+max(height(head->left),height(head->right));
+    y->ht=1+max(height(y->left),height(y->right));
+    return y;
+}
+node* insert(node* temp, int key){
+    
+    if(temp==NULL)
+        return newnode(key);
+    if(key>temp->key)
+        temp->right=insert(temp->right,key);
+    else if(key<temp->key)
+        temp->left=insert(temp->left,key);
+    else
+        return 0;
+
+    temp->ht=1+max(height(temp->left),height(temp->right));
+
+    int wt=weight(temp);
+    
+    if(wt==2 && key>temp->right->key){
+        return rrr(temp);
+    }
+    if(wt==2 && key<temp->right->key){
+        temp->right=llr(temp->right);
+        return rrr(temp);
+    }
+    if(wt==-2 && key<temp->left->key){
+        return llr(temp);
+    }
+    if(wt==-2 && key>temp->left->key){
+        temp->left=rrr(temp->left);
+        return llr(temp);
+    }
+
+    return temp;
+}
+void AVL_sort(node* head){
+    if(head!=NULL){
+        AVL_sort(head->left);
+        cout<<head->key<<"("<<head->ht<<"){"<<weight(head)<<"} ";
+        AVL_sort(head->right);
+    }   
+}
+int sub=0;
+node* del(node *temp){
+    if(temp==NULL)
+        return NULL;
+    if(temp->left==NULL){
+        sub=temp->key;
+        return temp->right;
+    }
+    temp->left=del(temp->left);
+    temp->ht=1+max(height(temp->left),height(temp->right));
+
+    int wt=weight(temp);
+    
+    if(wt==2 && weight(temp->right)==1){
+        return rrr(temp);
+    }
+    if(wt==2 && weight(temp->right)<1){
+        temp->right=llr(temp->right);
+        return rrr(temp);
+    }
+    if(wt==-2 && weight(temp->left)==-1){
+        return llr(temp);
+    }
+    if(wt==-2 && weight(temp->left)>-1){
+        temp->left=rrr(temp->left);
+        return llr(temp);
+    }
+
+    return temp;
+}
+node* delete_node(node *temp,int key){
+    if(temp!=NULL){
+        if (temp->key==key){
+            if(temp->right!=NULL){
+                temp->right=del(temp->right);
+                temp->key=sub;
+            }
+            else{
+                if(temp->left!=NULL){
+                    return temp->left;
+                }
+                else{
+                    return NULL;
+                }
+            }
+        }
+        else if(temp->key>key){
+            temp->left=delete_node(temp->left,key);
+        }
+        else if(temp->key<key){
+            temp->right=delete_node(temp->right,key);
+        }       
+        temp->ht=1+max(height(temp->left),height(temp->right));
+
+        int wt=weight(temp);
+    
+        if(wt==2 && weight(temp->right)==1){
+            return rrr(temp);
+        }
+        if(wt==2 && weight(temp->right)<1){
+            temp->right=llr(temp->right);
+            return rrr(temp);
+        }
+        if(wt==-2 && weight(temp->left)==-1){
+            return llr(temp);
+        }
+        if(wt==-2 && weight(temp->left)>-1){
+            temp->left=rrr(temp->left);
+            return llr(temp);
+        }
+
+        return temp;
+    }
+    return NULL;
+}
+int main(){
+    node *head=NULL;
+    head=insert(head,2);
+    head=insert(head,7);
+    head=insert(head,11);
+    head=insert(head,8);
+    head=insert(head,4);
+    head=insert(head,3);
+    head=insert(head,1);
+    head=insert(head,5);
+    head=insert(head,-1);
+    head=insert(head,-2);
+    AVL_sort(head);
+    cout<<"\n";
+    head=delete_node(head,11);
+    
+    AVL_sort(head);
+    cout<<"\n";
+    head=delete_node(head,7);
+    AVL_sort(head);
+    cout<<"\n";
+    head=delete_node(head,8);
+    AVL_sort(head);
+    cout<<"\n";
+    head=delete_node(head,5);
+    AVL_sort(head);
+    cout<<"\n";
+    head=delete_node(head,-1);
+    AVL_sort(head);
+    cout<<"\n";
+    return 0;
+}                       
